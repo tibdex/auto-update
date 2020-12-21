@@ -8,8 +8,8 @@ on: push
 #       - prod
 
 jobs:
-  autosquash:
-    name: Autosquash
+  Auto:
+    name: Auto-update
     runs-on: ubuntu-18.04
     steps:
       - uses: tibdex/auto-update@v1
