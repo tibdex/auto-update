@@ -36,7 +36,7 @@ const run = async () => {
 
     const payload = context.payload as EventPayloads.WebhookPayloadPush;
     // See https://docs.github.com/en/free-pro-team@latest/developers/webhooks-and-events/webhook-events-and-payloads#webhook-payload-object-34.
-    const base = payload.ref.slice("/refs/heads/".length);
+    const base = payload.ref.slice("refs/heads/".length);
 
     info(`Fetching pull requests based on "${base}"`);
 
