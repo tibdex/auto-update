@@ -1,0 +1,15 @@
+name: Auto-update
+author: Thibault Derousseaux <tibdex@gmail.com>
+description: Automatically keep pull requests up to date with their base branch.
+inputs:
+  github_token:
+    description: Token for the GitHub API.
+    required: true
+  label:
+    description: If given, pull requests without this label will be ignored.
+runs:
+  using: node12
+  main: dist/index.js
+branding:
+  icon: refresh-cw
+  color: blue

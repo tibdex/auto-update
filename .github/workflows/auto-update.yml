@@ -1,0 +1,17 @@
+name: Auto-update
+on: push
+# If pull requests are always based on the same branches, only triggering the workflow when these branches receive new commits will minimize the workflow execution.
+# on:
+#   push:
+#     branches:
+#       - dev
+#       - prod
+
+jobs:
+  autosquash:
+    name: Autosquash
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: tibdex/auto-update@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
