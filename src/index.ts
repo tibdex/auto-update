@@ -55,55 +55,53 @@ const run = async () => {
       )}`,
     );
 
-    await Promise.all(
-      pullRequests
-        .filter((pullRequest) => {
-          if (
-            label !== undefined &&
-            !pullRequest.labels.some(({ name }) => name === label)
-          ) {
-            info(
-              `Pull request #${pullRequest.number} does not have the "${label}" label`,
+    const pullRequestsToUpdate = pullRequests.filter((pullRequest) => {
+      if (pullRequest.base.sha === payload.after) {
+        info(`Pull request #${pullRequest.number} is already up to date`);
+        return false;
+      }
+
+      if (pullRequest.draft) {
+        info(`Pull request #${pullRequest.number} is still a draft`);
+        return false;
+      }
+
+      if (
+        label !== undefined &&
+        !pullRequest.labels.some(({ name }) => name === label)
+      ) {
+        info(
+          `Pull request #${pullRequest.number} does not have the "${label}" label`,
+        );
+        return false;
+      }
+
+      return true;
+    });
+
+    for (const pullRequest of pullRequestsToUpdate) {
+      await group(
+        `Attempting to update pull request #${pullRequest.number}`,
+        async () => {
+          try {
+            await octokit.request(
+              "PUT /repos/{owner}/{repo}/pulls/{pull_number}/update-branch",
+              {
+                ...context.repo,
+                // See https://docs.github.com/en/free-pro-team@latest/rest/reference/pulls#update-a-pull-request-branch-preview-notices.
+                mediaType: {
+                  previews: ["lydian"],
+                },
+                pull_number: pullRequest.number,
+              },
             );
-            return false;
+            info("Updated!");
+          } catch (error: unknown) {
+            handleError(error, { handle: warning });
           }
-
-          if (pullRequest.draft) {
-            info(`Pull request #${pullRequest.number} is still a draft`);
-            return false;
-          }
-
-          if (pullRequest.base.sha === payload.after) {
-            info(`Pull request #${pullRequest.number} is already up to date`);
-            return false;
-          }
-
-          return true;
-        })
-        .map(async (pullRequest) => {
-          await group(
-            `Attempting to update pull request #${pullRequest.number}`,
-            async () => {
-              try {
-                await octokit.request(
-                  "PUT /repos/{owner}/{repo}/pulls/{pull_number}/update-branch",
-                  {
-                    ...context.repo,
-                    // See https://docs.github.com/en/free-pro-team@latest/rest/reference/pulls#update-a-pull-request-branch-preview-notices.
-                    mediaType: {
-                      previews: ["lydian"],
-                    },
-                    pull_number: pullRequest.number,
-                  },
-                );
-                info("Updated!");
-              } catch (error: unknown) {
-                handleError(error, { handle: warning });
-              }
-            },
-          );
-        }),
-    );
+        },
+      );
+    }
   } catch (error: unknown) {
     handleError(error, { handle: setFailed });
   }
