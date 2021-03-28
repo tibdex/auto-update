@@ -4,13 +4,7 @@ module.exports = {
   env: {
     es6: true,
   },
-  extends: [
-    "plugin:unicorn/recommended",
-    "xo",
-    "xo-typescript",
-    "prettier",
-    "prettier/@typescript-eslint",
-  ],
+  extends: ["plugin:unicorn/recommended", "xo", "xo-typescript", "prettier"],
   parser: "@typescript-eslint/parser",
   parserOptions: {
     ecmaVersion: 2018,
