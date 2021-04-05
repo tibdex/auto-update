@@ -24,6 +24,83 @@ const handleError = (
   handle(error);
 };
 
+const unmergeablePullRequestCommentBody =
+  "Cannot auto-update because of conflicts.";
+
+const handleUnmergeablePullRequest = async (
+  pullRequest: components["schemas"]["pull-request"],
+  {
+    octokit,
+  }: Readonly<{
+    octokit: InstanceType<typeof GitHub>;
+  }>,
+): Promise<void> => {
+  await group(
+    `Handling unmergeable pull request #${pullRequest.number}`,
+    async () => {
+      try {
+        const {
+          head: {
+            repo: {
+              name: repo,
+              owner: { login: owner },
+            },
+            sha,
+          },
+          number,
+        } = pullRequest;
+
+        const {
+          data: { commit: lastCommit },
+        } = await octokit.request("GET /repos/{owner}/{repo}/commits/{ref}", {
+          owner,
+          ref: sha,
+          repo,
+        });
+
+        const lastCommitDate = lastCommit.committer?.date;
+
+        if (!lastCommit) {
+          throw new Error(`Missing date on last commit ${sha}`);
+        }
+
+        const comments = await octokit.paginate(
+          "GET /repos/{owner}/{repo}/issues/{issue_number}/comments",
+          {
+            ...context.repo,
+            issue_number: number,
+            since: lastCommitDate,
+          },
+        );
+
+        const existingUnmergeablePullRequestComment = comments.find(
+          ({ body }) => body === unmergeablePullRequestCommentBody,
+        );
+
+        if (existingUnmergeablePullRequestComment) {
+          info(
+            `Already commented since last commit: ${existingUnmergeablePullRequestComment.html_url}`,
+          );
+          return;
+        }
+
+        const { data: newComment } = await octokit.request(
+          "POST /repos/{owner}/{repo}/issues/{issue_number}/comments",
+          {
+            ...context.repo,
+            body: unmergeablePullRequestCommentBody,
+            issue_number: number,
+          },
+        );
+
+        info(`Commented: ${newComment.html_url}`);
+      } catch (error: unknown) {
+        handleError(error, { handle: warning });
+      }
+    },
+  );
+};
+
 const handlePullRequest = async (
   pullRequest: components["schemas"]["pull-request-simple"],
   {
@@ -55,10 +132,7 @@ const handlePullRequest = async (
   );
 
   if (!detailedPullRequest.mergeable) {
-    info(
-      `Pull request #${pullRequest.number} is not mergeable (it probably has conflicts)`,
-    );
-    return;
+    return handleUnmergeablePullRequest(detailedPullRequest, { octokit });
   }
 
   await group(
