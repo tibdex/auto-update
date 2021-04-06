@@ -58,10 +58,10 @@ const handleUnmergeablePullRequest = async (
           repo,
         });
 
-        const lastCommitDate = lastCommit.committer?.date;
+        const lastCommitter = lastCommit.committer;
 
-        if (!lastCommit) {
-          throw new Error(`Missing date on last commit ${sha}`);
+        if (!lastCommitter) {
+          throw new Error(`Missing committer on last commit ${sha}`);
         }
 
         const comments = await octokit.paginate(
@@ -69,7 +69,7 @@ const handleUnmergeablePullRequest = async (
           {
             ...context.repo,
             issue_number: number,
-            since: lastCommitDate,
+            since: lastCommitter.date,
           },
         );
 
