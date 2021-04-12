@@ -24,81 +24,75 @@ const handleError = (
   handle(error);
 };
 
-const unmergeablePullRequestCommentBody =
+const unupdatablePullRequestCommentBody =
   "Cannot auto-update because of conflicts.";
 
-const handleUnmergeablePullRequest = async (
-  pullRequest: components["schemas"]["pull-request"],
+const handleUnupdatablePullRequest = async (
+  pullRequest: components["schemas"]["pull-request-simple"],
   {
     octokit,
   }: Readonly<{
     octokit: InstanceType<typeof GitHub>;
   }>,
 ): Promise<void> => {
-  await group(
-    `Handling unmergeable pull request #${pullRequest.number}`,
-    async () => {
-      try {
-        const {
-          head: {
-            repo: {
-              name: repo,
-              owner: { login: owner },
-            },
-            sha,
-          },
-          number,
-        } = pullRequest;
+  try {
+    const {
+      head: {
+        repo: { full_name },
+        sha,
+      },
+      number,
+    } = pullRequest;
 
-        const {
-          data: { commit: lastCommit },
-        } = await octokit.request("GET /repos/{owner}/{repo}/commits/{ref}", {
-          owner,
-          ref: sha,
-          repo,
-        });
+    const [owner, repo] = full_name.split("/");
 
-        const lastCommitter = lastCommit.committer;
+    const {
+      data: { commit: lastCommit },
+    } = await octokit.request("GET /repos/{owner}/{repo}/commits/{ref}", {
+      owner,
+      ref: sha,
+      repo,
+    });
 
-        if (!lastCommitter) {
-          throw new Error(`Missing committer on last commit ${sha}`);
-        }
+    const lastCommitter = lastCommit.committer;
 
-        const comments = await octokit.paginate(
-          "GET /repos/{owner}/{repo}/issues/{issue_number}/comments",
-          {
-            ...context.repo,
-            issue_number: number,
-            since: lastCommitter.date,
-          },
-        );
+    if (!lastCommitter) {
+      throw new Error(`Missing committer on last commit ${sha}`);
+    }
 
-        const existingUnmergeablePullRequestComment = comments.find(
-          ({ body }) => body === unmergeablePullRequestCommentBody,
-        );
+    const comments = await octokit.paginate(
+      "GET /repos/{owner}/{repo}/issues/{issue_number}/comments",
+      {
+        ...context.repo,
+        issue_number: number,
+        since: lastCommitter.date,
+      },
+    );
 
-        if (existingUnmergeablePullRequestComment) {
-          info(
-            `Already commented since last commit: ${existingUnmergeablePullRequestComment.html_url}`,
-          );
-          return;
-        }
+    const existingUnupdatablePullRequestComment = comments.find(
+      ({ body }) => body === unupdatablePullRequestCommentBody,
+    );
 
-        const { data: newComment } = await octokit.request(
-          "POST /repos/{owner}/{repo}/issues/{issue_number}/comments",
-          {
-            ...context.repo,
-            body: unmergeablePullRequestCommentBody,
-            issue_number: number,
-          },
-        );
+    if (existingUnupdatablePullRequestComment) {
+      info(
+        `Already commented since last commit: ${existingUnupdatablePullRequestComment.html_url}`,
+      );
+      return;
+    }
 
-        info(`Commented: ${newComment.html_url}`);
-      } catch (error: unknown) {
-        handleError(error, { handle: warning });
-      }
-    },
-  );
+    const { data: newComment } = await octokit.request(
+      "POST /repos/{owner}/{repo}/issues/{issue_number}/comments",
+      {
+        ...context.repo,
+        body: unupdatablePullRequestCommentBody,
+        issue_number: number,
+      },
+    );
+
+    info(`Commented: ${newComment.html_url}`);
+  } catch (error: unknown) {
+    handleError(error, { handle: warning });
+  }
 };
 
 const handlePullRequest = async (
@@ -123,18 +117,6 @@ const handlePullRequest = async (
     return;
   }
 
-  const { data: detailedPullRequest } = await octokit.request(
-    "GET /repos/{owner}/{repo}/pulls/{pull_number}",
-    {
-      ...context.repo,
-      pull_number: pullRequest.number,
-    },
-  );
-
-  if (!detailedPullRequest.mergeable) {
-    return handleUnmergeablePullRequest(detailedPullRequest, { octokit });
-  }
-
   await group(
     `Attempting to update pull request #${pullRequest.number}`,
     async () => {
@@ -153,6 +135,7 @@ const handlePullRequest = async (
         info("Updated!");
       } catch (error: unknown) {
         handleError(error, { handle: warning });
+        await handleUnupdatablePullRequest(pullRequest, { octokit });
       }
     },
   );
@@ -160,7 +143,6 @@ const handlePullRequest = async (
 
 const run = async () => {
   try {
-    const label = getInput("label") || undefined;
     const token = getInput("github_token", { required: true });
     const octokit = getOctokit(token);
 
