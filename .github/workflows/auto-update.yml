@@ -1,12 +1,12 @@
 name: Auto-update
 # Auto-update only listens to `push` events.
 # If a pull request is already outdated when enabling auto-merge, manually click on the "Update branch" button a first time to avoid having to wait for another commit to land on the base branch for the pull request to be updated.
-on: push
+# on: push
 # If pull requests are always based on the same branches, only triggering the workflow when these branches receive new commits will minimize the workflow execution.
-# on:
-#   push:
-#     branches:
-#       - main
+on:
+  push:
+    branches:
+      - main
 
 jobs:
   Auto:
@@ -16,6 +16,5 @@ jobs:
       - uses: tibdex/auto-update@v2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          # Uncomment to ignore pull requests without the specified label.
           label: auto-update
 
