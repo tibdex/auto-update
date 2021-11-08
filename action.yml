@@ -5,6 +5,8 @@ inputs:
   github_token:
     description: Token for the GitHub API.
     required: true
+  label:
+    description: If given, pull requests without this label will be ignored.
 runs:
   using: node12
   main: dist/index.js

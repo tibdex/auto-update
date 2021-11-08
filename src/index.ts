@@ -1,15 +1,16 @@
+import { context, getOctokit } from "@actions/github";
 import {
-  error as logError,
   getInput,
-  info,
   group,
+  info,
+  error as logError,
   setFailed,
   warning,
 } from "@actions/core";
-import { context, getOctokit } from "@actions/github";
+
 import { GitHub } from "@actions/github/lib/utils";
-import type { components } from "@octokit/openapi-types";
 import type { PushEvent } from "@octokit/webhooks-definitions/schema";
+import type { components } from "@octokit/openapi-types";
 
 const handleError = (
   error: unknown,
@@ -144,6 +145,7 @@ const handlePullRequest = async (
 const run = async () => {
   try {
     const token = getInput("github_token", { required: true });
+    const label = getInput("label") || undefined;
     const octokit = getOctokit(token);
 
     if (context.eventName !== "push") {
@@ -173,7 +175,21 @@ const run = async () => {
       )}`,
     );
 
-    for (const pullRequest of pullRequests) {
+    for (const pullRequest of pullRequests) {  
+        if (pullRequest.draft) {
+          info(`Pull request #${pullRequest.number} is still a draft`);
+          continue
+        }
+  
+        if (
+          label !== undefined &&
+          !pullRequest.labels.some(({ name }) => name === label)
+        ) {
+          info(
+            `Pull request #${pullRequest.number} does not have the "${label}" label`,
+          );
+          continue
+        }      
       await handlePullRequest(pullRequest, { eventPayload, octokit });
     }
   } catch (error: unknown) {

@@ -16,3 +16,5 @@ jobs:
       - uses: tibdex/auto-update@v2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          # Uncomment to ignore pull requests without the specified label.
+          # label: auto-update
