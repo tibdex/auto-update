@@ -6,7 +6,7 @@ inputs:
     description: Token for the GitHub API.
     required: true
 runs:
-  using: node12
+  using: node16
   main: dist/index.js
 branding:
   icon: refresh-cw

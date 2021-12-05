@@ -6,8 +6,8 @@
     "moduleResolution": "node",
     "noEmitOnError": true,
     "strict": true,
-    "target": "esnext",
+    "target": "es2021",
     "types": ["node"]
   },
-  "include": [".*.js", "*.js", "src"]
+  "include": ["src"]
 }
