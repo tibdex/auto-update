@@ -1,8 +1,8 @@
 import {
-  error as logError,
   getInput,
-  info,
   group,
+  info,
+  error as logError,
   setFailed,
   warning,
 } from "@actions/core";
@@ -174,6 +174,8 @@ const run = async () => {
     );
 
     for (const pullRequest of pullRequests) {
+      // PRs are handled sequentially to avoid breaking GitHub's log grouping feature.
+      // eslint-disable-next-line no-await-in-loop
       await handlePullRequest(pullRequest, { eventPayload, octokit });
     }
   } catch (error: unknown) {
