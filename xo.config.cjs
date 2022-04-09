@@ -22,6 +22,14 @@ module.exports = {
     // Named export are better for static analysis.
     // See https://humanwhocodes.com/blog/2019/01/stop-using-default-exports-javascript-module/
     "import/no-default-export": "error",
+    "import/no-extraneous-dependencies": [
+      "error",
+      {
+        devDependencies: false,
+        optionalDependencies: false,
+        peerDependencies: false,
+      },
+    ],
     "import/no-namespace": "error",
     "import/order": [
       "error",

@@ -1,31 +1,35 @@
 {
   "name": "auto-update",
-  "version": "2.1.3",
+  "version": "2.1.4",
   "license": "MIT",
+  "type": "module",
   "files": [
     "action.yml",
     "dist"
   ],
   "scripts": {
+    "prebuild": "tsc --build",
     "build": "ncc build src/index.ts --minify  --target es2021 --v8-cache",
     "prettier": "prettier --ignore-path .gitignore \"./**/*.{cjs,js,json,md,ts,yml}\"",
     "xo": "xo"
   },
-  "devDependencies": {
+  "dependencies": {
     "@actions/core": "^1.6.0",
-    "@actions/github": "^5.0.0",
+    "@actions/github": "^5.0.1"
+  },
+  "devDependencies": {
     "@octokit/openapi-types": "^11.2.0",
     "@octokit/webhooks-definitions": "^3.67.3",
     "@types/node": "^16.11.11",
-    "@vercel/ncc": "^0.33.0",
-    "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-import": "^2.25.3",
+    "@vercel/ncc": "^0.33.3",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-sort-destructure-keys": "^1.4.0",
     "eslint-plugin-typescript-sort-keys": "^2.1.0",
-    "prettier": "^2.5.1",
-    "prettier-plugin-packagejson": "^2.2.15",
-    "typescript": "^4.5.2",
-    "xo": "^0.47.0",
-    "yarn-deduplicate": "^3.1.0"
+    "prettier": "^2.6.2",
+    "prettier-plugin-packagejson": "^2.2.17",
+    "typescript": "^4.7.0-beta",
+    "xo": "^0.48.0",
+    "yarn-deduplicate": "^4.0.0"
   }
 }
