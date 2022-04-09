@@ -7,9 +7,9 @@ import {
   warning,
 } from "@actions/core";
 import { context, getOctokit } from "@actions/github";
-import { GitHub } from "@actions/github/lib/utils";
+import type { GitHub } from "@actions/github/lib/utils.js";
 import type { components } from "@octokit/openapi-types";
-import type { PushEvent } from "@octokit/webhooks-definitions/schema";
+import type { PushEvent } from "@octokit/webhooks-definitions/schema.js";
 
 const handleError = (
   error: unknown,
@@ -125,10 +125,6 @@ const handlePullRequest = async (
           "PUT /repos/{owner}/{repo}/pulls/{pull_number}/update-branch",
           {
             ...context.repo,
-            // See https://docs.github.com/en/free-pro-team@latest/rest/reference/pulls#update-a-pull-request-branch-preview-notices.
-            mediaType: {
-              previews: ["lydian"],
-            },
             pull_number: pullRequest.number,
           },
         );
