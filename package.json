@@ -1,6 +1,6 @@
 {
   "name": "auto-update",
-  "version": "2.1.4",
+  "version": "2.1.5",
   "license": "MIT",
   "type": "module",
   "files": [
@@ -15,7 +15,8 @@
   },
   "dependencies": {
     "@actions/core": "^1.6.0",
-    "@actions/github": "^5.0.1"
+    "@actions/github": "^5.0.1",
+    "ensure-error": "^4.0.0"
   },
   "devDependencies": {
     "@octokit/openapi-types": "^11.2.0",

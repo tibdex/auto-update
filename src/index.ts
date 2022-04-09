@@ -1,28 +1,9 @@
-import {
-  getInput,
-  group,
-  info,
-  error as logError,
-  setFailed,
-  warning,
-} from "@actions/core";
+import { getInput, group, info, setFailed, warning } from "@actions/core";
+import ensureError from "ensure-error";
 import { context, getOctokit } from "@actions/github";
 import type { GitHub } from "@actions/github/lib/utils.js";
 import type { components } from "@octokit/openapi-types";
 import type { PushEvent } from "@octokit/webhooks-definitions/schema.js";
-
-const handleError = (
-  error: unknown,
-  {
-    handle = logError,
-  }: Readonly<{ handle?: (error: string | Error) => void }> = {},
-) => {
-  if (typeof error !== "string" && !(error instanceof Error)) {
-    throw new TypeError(`Caught error of unexpected type: ${typeof error}`);
-  }
-
-  handle(error);
-};
 
 const unupdatablePullRequestCommentBody =
   "Cannot auto-update because of conflicts.";
@@ -91,7 +72,7 @@ const handleUnupdatablePullRequest = async (
 
     info(`Commented: ${newComment.html_url}`);
   } catch (error: unknown) {
-    handleError(error, { handle: warning });
+    warning(ensureError(error));
   }
 };
 
@@ -130,7 +111,7 @@ const handlePullRequest = async (
         );
         info("Updated!");
       } catch (error: unknown) {
-        handleError(error, { handle: warning });
+        warning(ensureError(error));
         await handleUnupdatablePullRequest(pullRequest, { octokit });
       }
     },
@@ -175,7 +156,7 @@ const run = async () => {
       await handlePullRequest(pullRequest, { eventPayload, octokit });
     }
   } catch (error: unknown) {
-    handleError(error, { handle: setFailed });
+    setFailed(ensureError(error));
   }
 };
 
