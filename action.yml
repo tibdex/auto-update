@@ -4,7 +4,7 @@ description: Automatically keep pull requests with auto-merged enabled up to dat
 inputs:
   github_token:
     description: Token for the GitHub API.
-    required: true
+    default: ${{ github.token }}
 runs:
   using: node16
   main: dist/index.js

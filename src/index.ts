@@ -1,15 +1,18 @@
 import { getInput, group, info, setFailed, warning } from "@actions/core";
 import { context, getOctokit } from "@actions/github";
 import type { GitHub } from "@actions/github/lib/utils.js";
-import type { components } from "@octokit/openapi-types";
+import type { PaginatingEndpoints } from "@octokit/plugin-paginate-rest";
 import type { PushEvent } from "@octokit/webhooks-definitions/schema.js";
 import ensureError from "ensure-error";
 
 const unupdatablePullRequestCommentBody =
   "Cannot auto-update because of conflicts.";
 
+type PullRequest =
+  PaginatingEndpoints["GET /repos/{owner}/{repo}/pulls"]["response"]["data"][number];
+
 const handleUnupdatablePullRequest = async (
-  pullRequest: components["schemas"]["pull-request-simple"],
+  pullRequest: PullRequest,
   {
     octokit,
   }: Readonly<{
@@ -77,7 +80,7 @@ const handleUnupdatablePullRequest = async (
 };
 
 const handlePullRequest = async (
-  pullRequest: components["schemas"]["pull-request-simple"],
+  pullRequest: PullRequest,
   {
     eventPayload,
     octokit,
@@ -135,7 +138,7 @@ const run = async () => {
 
     info(`Fetching pull requests based on "${base}"`);
 
-    const pullRequests = await octokit.paginate(
+    const pullRequests: readonly PullRequest[] = await octokit.paginate(
       "GET /repos/{owner}/{repo}/pulls",
       {
         ...context.repo,
