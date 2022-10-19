@@ -81,6 +81,7 @@ const handleUnupdatablePullRequest = async (
 
 const handlePullRequest = async (
   pullRequest: PullRequest,
+  auto_merge_all_prs: String,
   {
     eventPayload,
     octokit,
@@ -89,7 +90,7 @@ const handlePullRequest = async (
     octokit: InstanceType<typeof GitHub>;
   }>,
 ): Promise<void> => {
-  if (!pullRequest.auto_merge) {
+  if (!auto_merge_all_prs && !pullRequest.auto_merge) {
     info(
       `Pull request #${pullRequest.number} does not have auto-merge enabled`,
     );
@@ -123,6 +124,7 @@ const handlePullRequest = async (
 
 const run = async () => {
   try {
+    const auto_merge_all_prs = getInput("auto_merge_all_prs", { required: true });
     const token = getInput("github_token", { required: true });
     const octokit = getOctokit(token);
 
@@ -156,7 +158,7 @@ const run = async () => {
     for (const pullRequest of pullRequests) {
       // PRs are handled sequentially to avoid breaking GitHub's log grouping feature.
       // eslint-disable-next-line no-await-in-loop
-      await handlePullRequest(pullRequest, { eventPayload, octokit });
+      await handlePullRequest(pullRequest, auto_merge_all_prs, { eventPayload, octokit });
     }
   } catch (error: unknown) {
     setFailed(ensureError(error));
