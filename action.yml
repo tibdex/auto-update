@@ -3,7 +3,7 @@ author: Thibault Derousseaux <tibdex@gmail.com>
 description: Automatically keep pull requests with auto-merged enabled up to date with their base branch.
 inputs:
   auto_merge_all_prs:
-    description: When this is false only PRs with auto-merge enabled will be updated.
+    description: When this is false only PRs with auto-merge enabled will be updated. Setting to true will cause all PRs to be updated.
     default: false
   github_token:
     description: Token for the GitHub API.
