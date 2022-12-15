@@ -5,6 +5,9 @@ inputs:
   github_token:
     description: Token for the GitHub API.
     default: ${{ github.token }}
+  sort-by-updated-time:
+    description: Boolean to sort pull requests by their updated time rather than their number.
+    default: False
 runs:
   using: node16
   main: dist/index.js

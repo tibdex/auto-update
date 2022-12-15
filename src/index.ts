@@ -124,6 +124,7 @@ const handlePullRequest = async (
 const run = async () => {
   try {
     const token = getInput("github_token", { required: true });
+    const sort_by_updated_time = getInput("sort-by-updated-time", { required: true });
     const octokit = getOctokit(token);
 
     if (context.eventName !== "push") {
@@ -138,7 +139,7 @@ const run = async () => {
 
     info(`Fetching pull requests based on "${base}"`);
 
-    const pullRequests: readonly PullRequest[] = await octokit.paginate(
+    const pullRequests: PullRequest[] = await octokit.paginate(
       "GET /repos/{owner}/{repo}/pulls",
       {
         ...context.repo,
@@ -146,6 +147,10 @@ const run = async () => {
         state: "open",
       },
     );
+
+    if(sort_by_updated_time){
+      pullRequests.sort((a,b) => a.updated_at > b.updated_at ? 1 : a.updated_at < b.updated_at ? -1 : 0)
+    }
 
     info(
       `Fetched pull requests: ${JSON.stringify(
