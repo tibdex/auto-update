@@ -81,7 +81,7 @@ const handleUnupdatablePullRequest = async (
 
 const handlePullRequest = async (
   pullRequest: PullRequest,
-  ignore_auto_merge: String,
+  ignore_auto_merge: string,
   {
     eventPayload,
     octokit,
