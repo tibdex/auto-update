@@ -89,9 +89,9 @@ const handlePullRequest = async (
     octokit: InstanceType<typeof GitHub>;
   }>,
 ): Promise<void> => {
-  if (!pullRequest.auto_merge) {
+  if (!pullRequest.auto_merge && !pullRequest.labels.some(({ name }) => name === `auto-update:opt-in`)) {
     info(
-      `Pull request #${pullRequest.number} does not have auto-merge enabled`,
+      `Pull request #${pullRequest.number} does not have auto-merge enabled and does not have auto-update:opt-in label`,
     );
     return;
   }
