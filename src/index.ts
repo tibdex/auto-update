@@ -113,6 +113,20 @@ const handlePullRequest = async (
           },
         );
         info("Updated!");
+
+        const workflowId = getInput("workflow_id");
+        if (!workflowId) {
+          return;
+        }
+
+        await octokit.request(
+          "POST /repos/{owner}/{repo}/actions/workflows/{workflow_id}/dispatches",
+          {
+            ...context.repo,
+            ref: pullRequest.head.ref,
+            workflow_id: workflowId,
+          }
+        )
       } catch (error: unknown) {
         warning(ensureError(error));
         await handleUnupdatablePullRequest(pullRequest, { octokit });

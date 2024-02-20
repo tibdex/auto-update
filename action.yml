@@ -5,8 +5,11 @@ inputs:
   github_token:
     description: Token for the GitHub API.
     default: ${{ github.token }}
+  workflow_id:
+    description: The ID of the workflow to trigger.
+    required: false
 runs:
-  using: node16
+  using: node20
   main: dist/index.js
 branding:
   icon: refresh-cw

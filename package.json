@@ -21,7 +21,7 @@
   "devDependencies": {
     "@octokit/plugin-paginate-rest": "^5.0.1",
     "@octokit/webhooks-definitions": "^3.67.3",
-    "@types/node": "^16.11.7",
+    "@types/node": "^20.11.19",
     "@vercel/ncc": "^0.34.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-import": "^2.26.0",
